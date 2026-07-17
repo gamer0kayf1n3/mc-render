@@ -1,3 +1,4 @@
+import dotenv from 'dotenv/config'
 import express from 'express'
 
 import path from "path"
@@ -6,7 +7,7 @@ import { fileURLToPath } from "url"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-import { getRenderCache, getTextureCache, refreshCache, setRenderCache, setTextureCache, getSteveCache, setSteveCache } from './cache.js'
+import { getRenderCache, getTextureCache, refreshCache, setRenderCache, setTextureCache, getSlimCache, setSlimCache } from './cache.js'
 import { initRenderer } from './browser.js'
 import { renderBrowser } from './render.js'
 import { enqueue } from './queue.js'
@@ -38,14 +39,15 @@ app.get('/render', async (req, res) => {
     }
 
     var skinBuffer = await getTextureCache(username);
-    var is_steve = await getSteveCache(username);
+    var is_slim = await getSlimCache(username);
     console.log("Request made by", username)
     if (!skinBuffer) {
-      if (username.startsWith(".")) ({ skin: skinBuffer, is_steve } = await bedrockSkinFetchHandler(username));
-      else if (username.startsWith("+")) skinBuffer = await uploadSkinFetchHandler(username);
-      else skinBuffer = await javaSkinFetchHandler(username);
+      if (username.startsWith(".")) ({ skin: skinBuffer, is_slim } = await bedrockSkinFetchHandler(username));
+      else if (username.startsWith("+")) ({skin: skinBuffer, is_slim} = await uploadSkinFetchHandler(username));
+      else ({ skin: skinBuffer, is_slim } = await javaSkinFetchHandler(username));
 
       await setTextureCache(username, skinBuffer)
+      
     }
     
     var freshRender = await enqueue(() => renderBrowser(skinBuffer))
@@ -64,8 +66,11 @@ app.listen(10001, async () => {
   console.log('Skin renderer ready on :10001')
 })
 
-app.post("/upload/:username", handleAvatarUpload, processAvatar);
+app.post("/upload", handleAvatarUpload, processAvatar);
 app.use(express.static('public'));
+app.get("/upload", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "index.html" ))
+})
 
 async function shutdown(signal) {
   console.log(`[index] received ${signal}, shutting down...`);

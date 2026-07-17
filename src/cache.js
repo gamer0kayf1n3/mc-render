@@ -9,7 +9,7 @@ const redis = await createClient({
 export async function refreshCache(username) {
   await redis.del(`textures:${username}`)
   await redis.del(`renders:${username}`)
-  await redis.del(`is_steve:${username}`)
+  await redis.del(`is_slim:${username}`)
 }
 
 export async function getTextureCache(username) {
@@ -28,12 +28,12 @@ export async function setRenderCache(username, buffer) {
   return redis.set(`renders:${username}`, buffer, { EX: 86400 })
 }
 
-export async function setSteveCache(username, is_steve) {
-  return redis.set(`is_steve:${username}`, is_steve, { EX: 86400 })
+export async function setSlimCache(username, is_slim) {
+  return redis.set(`is_slim:${username}`, is_slim ? 1:0, { EX: 86400 })
 }
 
-export async function getSteveCache(username) {
-  return await redis.get(`is_steve:${username}`)
+export async function getSlimCache(username) {
+  return await redis.get(`is_slim:${username}`) == 1 ? true : false
 }
 
 

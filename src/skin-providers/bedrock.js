@@ -1,4 +1,5 @@
-import {getbedrockXuidCache, setbedrockXuidCache} from '../cache.js'
+import {getbedrockXuidCache, setbedrockXuidCache } from '../cache.js'
+import { updateSlimUsernameStatus } from './is-slim.js'
 export async function bedrockSkinFetchHandler(username) {
     const cleanUsername = username.slice(1)
 
@@ -17,12 +18,13 @@ export async function bedrockSkinFetchHandler(username) {
     
     const skinDataResponseJSON = await skinDataResponse.json()
     const tex_id = skinDataResponseJSON.texture_id
-    const is_steve = skinDataResponseJSON.is_steve
+    const is_slim = !skinDataResponseJSON.is_steve
+    await updateSlimUsernameStatus(username, is_slim);
 
     const skinResponse = await fetch(`https://textures.minecraft.net/texture/${tex_id}`)
     if (!skinResponse.ok) throw new Error("Failed to fetch skin")
     
-    return {skin: Buffer.from(await skinResponse.arrayBuffer()), is_steve}
+    return {skin: Buffer.from(await skinResponse.arrayBuffer()), is_slim}
 }
 const headers = new Headers()
 headers.append("Accept", "application/json")

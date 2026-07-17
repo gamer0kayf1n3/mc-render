@@ -9,5 +9,8 @@
     "puppeteer": "^24.43.1",
     "redis": "^4.7.1",
     "three": "^0.185.1"
+  },
+  "scripts": {
+    "start": "node src/index.js"
   }
 }
