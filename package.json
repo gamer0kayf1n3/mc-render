@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "image-size": "^2.0.2",
+    "multer": "^2.2.0",
+    "playwright": "^1.61.1",
+    "puppeteer": "^24.43.1",
+    "redis": "^4.7.1",
+    "three": "^0.185.1"
+  }
+}
