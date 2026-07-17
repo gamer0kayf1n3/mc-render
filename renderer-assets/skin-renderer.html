@@ -89,26 +89,57 @@
 
     composer.addPass(new OutputPass());
 
-    new OBJLoader().load('./slim.obj', (obj) => {
-      obj.traverse((child) => {
-        console.log(child.name, child.type, child.isMesh);
-        if (child.isMesh) {
-          meshes.push(child);
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
-      scene.add(obj);
-      frameCameraToObject(camera, obj, 1.2, -35, 15);
+    const modelFiles = {
+      std: './std.obj',
+      slim: './slim.obj',
+      legacy: './legacy.obj',
+    };
 
-      const box = new THREE.Box3().setFromObject(obj);
+    const models = {};
+    let activeModelKey = null;
+
+    function loadModel(key, url) {
+      return new Promise((resolve, reject) => {
+        new OBJLoader().load(url, (obj) => {
+          const meshes = [];
+          obj.traverse((child) => {
+            if (child.isMesh) {
+              meshes.push(child);
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          obj.visible = false;
+          scene.add(obj);
+          models[key] = { group: obj, meshes };
+          resolve();
+        }, undefined, reject);
+      });
+    }
+
+    Promise.all(
+      Object.entries(modelFiles).map(([key, url]) => loadModel(key, url))
+    ).then(() => {
+      window.rendererReady = true;
+    });
+
+    function activateModel(key) {
+      if (activeModelKey === key) return;
+      if (activeModelKey) models[activeModelKey].group.visible = false;
+
+      const { group } = models[key];
+      group.visible = true;
+      activeModelKey = key;
+
+      frameCameraToObject(camera, group, 1.2, -35, 15);
+
+      const box = new THREE.Box3().setFromObject(group);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
 
-      ground.position.y = -7.001; // actual feet height, not a guess
-      console.log('box.min.y:', box.min.y);
+      ground.position.y = box.min.y;
       keyLight.target.position.set(center.x, center.y, center.z);
-      scene.add(keyLight.target); // DirectionalLight targets must be added to the scene to take effect
+      scene.add(keyLight.target);
 
       const pad = 2;
       const half = Math.max(size.x, size.y, size.z) / 2 + pad;
@@ -117,12 +148,12 @@
       keyLight.shadow.camera.top = half;
       keyLight.shadow.camera.bottom = -half;
       keyLight.shadow.camera.updateProjectionMatrix();
-
-      window.rendererReady = true;
-    });
+    }
 
 
-    window.setSkin = (base64DataUrl) => new Promise((resolve, reject) => {
+    window.setSkin = (base64DataUrl, modelKey) => new Promise((resolve, reject) => {
+      activateModel(modelKey);
+
       new THREE.TextureLoader().load(
         base64DataUrl,
         (texture) => {
@@ -130,9 +161,9 @@
           texture.minFilter = THREE.NearestFilter;
           texture.colorSpace = THREE.SRGBColorSpace;
 
-          const overlayNames = ['hat', 'SLIM_Lsleeve', 'SLIM_Rsleeve', 'Rpants', 'Lpants', 'jacket'];
+          const overlayNames = ['hat', 'SLIM_Lsleeve', 'SLIM_Rsleeve', 'Rpants', 'Lpants', 'jacket', 'Lsleeve', 'Rsleeve'];
 
-          meshes.forEach((mesh) => {
+          models[modelKey].meshes.forEach((mesh) => {
             mesh.material = new THREE.MeshLambertMaterial({
               map: texture,
               transparent: overlayNames.includes(mesh.name),
@@ -142,7 +173,7 @@
             });
           });
 
-          composer.render(); // <-- this replaces renderer.render(scene, camera)
+          composer.render();
           resolve();
           window.frameReady = true;
         },

@@ -17,6 +17,8 @@ import { javaSkinFetchHandler } from './skin-providers/java.js'
 import { bedrockSkinFetchHandler } from './skin-providers/bedrock.js'
 import { uploadSkinFetchHandler } from './skin-providers/upload.js'
 
+import sizeOf from 'image-size'
+
 const app = express()
 app.use(express.json({ limit: '5mb' }))
 
@@ -49,8 +51,10 @@ app.get('/render', async (req, res) => {
       await setTextureCache(username, skinBuffer)
       
     }
-    
-    var freshRender = await enqueue(() => renderBrowser(skinBuffer))
+
+    var key = sizeOf(skinBuffer).height == 32 ? "legacy" : is_slim ? "slim" : "std"
+
+    var freshRender = await enqueue(() => renderBrowser(skinBuffer, key))
     await setRenderCache(username, freshRender)
     return res.set({'Content-Type': 'image/png',
                 'X-Cache': 'MISS', 
