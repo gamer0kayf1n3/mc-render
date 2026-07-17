@@ -1,0 +1,33 @@
+.footer {
+    display: flex;
+    flex-direction: row;
+}
+
+.parentFooter {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.046);
+
+}
+
+.footerEls {
+    padding: 50px;
+    flex: 1;
+}
+
+ul {
+    list-style-type: none;
+}
+
+ul li {
+    padding: 5px;
+}
+
+ul li a {
+    text-decoration: none;
+    color: white;
+}
+@media (max-width: 800px) {
+    .footer {
+        flex-direction: column;
+    }
+}

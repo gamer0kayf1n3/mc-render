@@ -1,0 +1,39 @@
+.hero {
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.hero > * {
+    flex: 1;
+}
+.heroImage {
+    width: 100px;
+}
+
+.heroImage {
+    filter: url(#blur-and-scale);
+}
+h1 {
+    font-size: 100px;
+    line-height: 1.0;
+    text-shadow: 0px 0px 20px #ffffff6e;
+}
+
+@media (max-width: 800px) {
+    .hero {
+        flex-direction: column;
+    }
+    .hero > * {
+        flex: unset;
+    }
+    .heroImage {
+        height: 700px;
+        width: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    h1 {
+        font-size: 70px;
+    }
+}

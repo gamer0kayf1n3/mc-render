@@ -1,0 +1,43 @@
+.inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.dropdown {
+    background-color: rgb(18, 16, 23);
+    border: 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    color: white;
+    font-family: Inter;
+}
+
+.input {
+    all: unset;
+    background-color: rgb(18, 16, 23);
+    border: 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.btn {
+    all: unset;
+    background-color: red;
+    border: 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+@media (max-width: 800px) {
+    .inputs {
+        flex-direction: column;
+    }
+}

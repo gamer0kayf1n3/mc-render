@@ -1,0 +1,69 @@
+h2 {
+    text-align: center;
+}
+
+.form {
+    margin: 0 auto;
+    max-width: 400px;
+    width: 100%;
+    height: 300px;
+    display: flex;
+}
+
+.form form {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.file {
+    all: unset;
+    font-family: Inter !important;
+    width: 100%;
+    border: 3px solid blue;
+    border-radius: 5px;
+    max-height: 100px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.username {
+    max-width: 200px;
+    width: 100%;
+    padding: 10px;
+    color: white;
+    background-color: rgb(37, 4, 44);
+    border: 0;
+}
+.slimdiv {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.checkbox {
+    width: 25px;
+    height: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+.btn {
+    all: unset;
+    background-color: red;
+    border: 0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.btn:disabled {
+    filter: saturate(0.1);
+}
