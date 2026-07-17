@@ -4,12 +4,13 @@ const redis = await createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
 })
   .on("error", (err) => console.log("Redis Client Error", err))
-  .connect();
+  .connect()
 
 export async function refreshCache(username) {
   await redis.del(`textures:${username}`)
   await redis.del(`renders:${username}`)
   await redis.del(`is_slim:${username}`)
+  await redis.del(`head:${username}`)
 }
 
 export async function getTextureCache(username) {
@@ -44,4 +45,13 @@ export async function getbedrockXuidCache(username) {
 
 export async function setbedrockXuidCache(username, xuid) {
   return redis.set(`bedrock_xuid:${username}`, xuid, { EX: 86400 * 30 })
+}
+
+// head ops
+export async function getHeadCache(username) {
+  return await redis.get(commandOptions({ returnBuffers: true }), `head:${username}`)
+}
+
+export async function setHeadCache(username, croppedHead) {
+  return redis.set(`head:${username}`, croppedHead, { EX: 86400 * 30 })
 }

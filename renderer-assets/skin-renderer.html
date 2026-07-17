@@ -12,156 +12,156 @@
 
 <body style="margin:0; background-color: transparent;">
   <script type="module">
-    import * as THREE from 'three';
-    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
-    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-    var SIZE_X = 315 * 2;
-    var SIZE_Y = 512 * 2;
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(30, 630 / 1024, 0.1, 100);
-    camera.position.set(-3.75678, -1.17061, 10.33);
-    camera.quaternion.set(0.64196226, -0.13378605, 0.11152505, 0.74669131);
-    camera.updateProjectionMatrix();
+    import * as THREE from 'three'
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+    import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js'
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
+    var SIZE_X = 315 * 2
+    var SIZE_Y = 512 * 2
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(30, 630 / 1024, 0.1, 100)
+    camera.position.set(-3.75678, -1.17061, 10.33)
+    camera.quaternion.set(0.64196226, -0.13378605, 0.11152505, 0.74669131)
+    camera.updateProjectionMatrix()
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
-    renderer.setSize(SIZE_X, SIZE_Y);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.setClearColor(0x000000, 0); // color doesn't matter, alpha=0 is what counts
-    document.body.appendChild(renderer.domElement);
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true })
+    renderer.setSize(SIZE_X, SIZE_Y)
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
+    renderer.setClearColor(0x000000, 0) // color doesn't matter, alpha=0 is what counts
+    document.body.appendChild(renderer.domElement)
 
     // Ambient fill (soft, low intensity so shadows still read)
-    scene.add(new THREE.AmbientLight(0xffffff, 1.3));
+    scene.add(new THREE.AmbientLight(0xffffff, 1.3))
 
     // Key light (casts shadows)
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
-    keyLight.position.set(3, 6, 4);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(2048, 2048);
-    keyLight.shadow.radius = 8;
-    keyLight.shadow.blurSamples = 32;
-    keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 20;
-    keyLight.shadow.camera.left = -30;
-    keyLight.shadow.camera.right = 30;
-    keyLight.shadow.camera.top = 30;
-    keyLight.shadow.camera.bottom = -30;
-    keyLight.shadow.bias = -0.001;
-    //keyLight.intensity = 2.0;
-    scene.add(keyLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6)
+    keyLight.position.set(3, 6, 4)
+    keyLight.castShadow = true
+    keyLight.shadow.mapSize.set(2048, 2048)
+    keyLight.shadow.radius = 8
+    keyLight.shadow.blurSamples = 32
+    keyLight.shadow.camera.near = 0.5
+    keyLight.shadow.camera.far = 20
+    keyLight.shadow.camera.left = -30
+    keyLight.shadow.camera.right = 30
+    keyLight.shadow.camera.top = 30
+    keyLight.shadow.camera.bottom = -30
+    keyLight.shadow.bias = -0.001
+    //keyLight.intensity = 2.0
+    scene.add(keyLight)
 
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(20, 20),
       new THREE.ShadowMaterial({ opacity: 0.35 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -7;
-    ground.receiveShadow = true;
-    scene.add(ground);
+    )
+    ground.rotation.x = -Math.PI / 2
+    ground.position.y = -7
+    ground.receiveShadow = true
+    scene.add(ground)
 
     // Fill light (no shadow, softens the dark side)
     const fillLight = new THREE.DirectionalLight(0xaaccff, 0.6
-    );
-    fillLight.position.set(-3, 2, -4);
-    scene.add(fillLight);
-    let meshes = [];
+    )
+    fillLight.position.set(-3, 2, -4)
+    scene.add(fillLight)
+    let meshes = []
 
     const renderTarget = new THREE.WebGLRenderTarget(SIZE_X, SIZE_Y, {
       format: THREE.RGBAFormat,
       type: THREE.UnsignedByteType,
-    });
+    })
 
-    const composer = new EffectComposer(renderer, renderTarget);
-    composer.setSize(SIZE_X, SIZE_Y);
-    composer.addPass(new RenderPass(scene, camera));
+    const composer = new EffectComposer(renderer, renderTarget)
+    composer.setSize(SIZE_X, SIZE_Y)
+    composer.addPass(new RenderPass(scene, camera))
 
-    //const ssaoPass = new SSAOPass(scene, camera, SIZE_X, SIZE_Y);
-    //ssaoPass.kernelRadius = 8;
-    //ssaoPass.minDistance = 0.001;
-    //ssaoPass.maxDistance = 0.5;
-    //composer.addPass(ssaoPass);
+    //const ssaoPass = new SSAOPass(scene, camera, SIZE_X, SIZE_Y)
+    //ssaoPass.kernelRadius = 8
+    //ssaoPass.minDistance = 0.001
+    //ssaoPass.maxDistance = 0.5
+    //composer.addPass(ssaoPass)
 
-    composer.addPass(new OutputPass());
+    composer.addPass(new OutputPass())
 
     const modelFiles = {
       std: './std.obj',
       slim: './slim.obj',
       legacy: './legacy.obj',
-    };
+    }
 
-    const models = {};
-    let activeModelKey = null;
+    const models = {}
+    let activeModelKey = null
 
     function loadModel(key, url) {
       return new Promise((resolve, reject) => {
         new OBJLoader().load(url, (obj) => {
-          const meshes = [];
+          const meshes = []
           obj.traverse((child) => {
             if (child.isMesh) {
-              meshes.push(child);
-              child.castShadow = true;
-              child.receiveShadow = true;
+              meshes.push(child)
+              child.castShadow = true
+              child.receiveShadow = true
             }
-          });
-          obj.visible = false;
-          scene.add(obj);
-          models[key] = { group: obj, meshes };
-          resolve();
-        }, undefined, reject);
-      });
+          })
+          obj.visible = false
+          scene.add(obj)
+          models[key] = { group: obj, meshes }
+          resolve()
+        }, undefined, reject)
+      })
     }
 
     Promise.all(
       Object.entries(modelFiles).map(([key, url]) => loadModel(key, url))
     ).then(() => {
-      window.rendererReady = true;
-    });
+      window.rendererReady = true
+    })
 
     function activateModel(key) {
-      if (activeModelKey === key) return;
-      if (activeModelKey) models[activeModelKey].group.visible = false;
+      if (activeModelKey === key) return
+      if (activeModelKey) models[activeModelKey].group.visible = false
 
-      const { group } = models[key];
-      group.visible = true;
-      activeModelKey = key;
+      const { group } = models[key]
+      group.visible = true
+      activeModelKey = key
 
-      frameCameraToObject(camera, group, 1.2, -35, 15);
+      frameCameraToObject(camera, group, 1.2, -35, 15)
 
-      const box = new THREE.Box3().setFromObject(group);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
+      const box = new THREE.Box3().setFromObject(group)
+      const size = box.getSize(new THREE.Vector3())
+      const center = box.getCenter(new THREE.Vector3())
 
-      ground.position.y = box.min.y;
-      keyLight.target.position.set(center.x, center.y, center.z);
-      scene.add(keyLight.target);
+      ground.position.y = box.min.y
+      keyLight.target.position.set(center.x, center.y, center.z)
+      scene.add(keyLight.target)
 
-      const pad = 2;
-      const half = Math.max(size.x, size.y, size.z) / 2 + pad;
-      keyLight.shadow.camera.left = -half;
-      keyLight.shadow.camera.right = half;
-      keyLight.shadow.camera.top = half;
-      keyLight.shadow.camera.bottom = -half;
-      keyLight.shadow.camera.updateProjectionMatrix();
+      const pad = 2
+      const half = Math.max(size.x, size.y, size.z) / 2 + pad
+      keyLight.shadow.camera.left = -half
+      keyLight.shadow.camera.right = half
+      keyLight.shadow.camera.top = half
+      keyLight.shadow.camera.bottom = -half
+      keyLight.shadow.camera.updateProjectionMatrix()
     }
 
 
     window.setSkin = (base64DataUrl, modelKey) => new Promise((resolve, reject) => {
-      activateModel(modelKey);
+      activateModel(modelKey)
 
       new THREE.TextureLoader().load(
         base64DataUrl,
         (texture) => {
-          texture.magFilter = THREE.NearestFilter;
-          texture.minFilter = THREE.NearestFilter;
-          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.magFilter = THREE.NearestFilter
+          texture.minFilter = THREE.NearestFilter
+          texture.colorSpace = THREE.SRGBColorSpace
 
-          const overlayNames = ['hat', 'SLIM_Lsleeve', 'SLIM_Rsleeve', 'Rpants', 'Lpants', 'jacket', 'Lsleeve', 'Rsleeve'];
+          const overlayNames = ['hat', 'SLIM_Lsleeve', 'SLIM_Rsleeve', 'Rpants', 'Lpants', 'jacket', 'Lsleeve', 'Rsleeve']
 
           models[modelKey].meshes.forEach((mesh) => {
             mesh.material = new THREE.MeshLambertMaterial({
@@ -170,38 +170,38 @@
               depthWrite: !overlayNames.includes(mesh.name),
               alphaTest: overlayNames.includes(mesh.name) ? 0.1 : 0,
               side: overlayNames.includes(mesh.name) ? THREE.DoubleSide : THREE.FrontSide,
-            });
-          });
+            })
+          })
 
-          composer.render();
-          resolve();
-          window.frameReady = true;
+          composer.render()
+          resolve()
+          window.frameReady = true
         },
         undefined,
         reject
-      );
-    });
+      )
+    })
     function frameCameraToObject(camera, object, offset = 1.2, yawDeg = 0, pitchDeg = 0) {
-      const box = new THREE.Box3().setFromObject(object);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
+      const box = new THREE.Box3().setFromObject(object)
+      const size = box.getSize(new THREE.Vector3())
+      const center = box.getCenter(new THREE.Vector3())
 
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const fovRad = camera.fov * (Math.PI / 180);
-      let distance = maxDim / (2 * Math.tan(fovRad / 2));
-      distance *= offset;
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const fovRad = camera.fov * (Math.PI / 180)
+      let distance = maxDim / (2 * Math.tan(fovRad / 2))
+      distance *= offset
 
-      const yaw = yawDeg * (Math.PI / 180);
-      const pitch = pitchDeg * (Math.PI / 180);
+      const yaw = yawDeg * (Math.PI / 180)
+      const pitch = pitchDeg * (Math.PI / 180)
 
       // spherical offset from center
-      const x = center.x + distance * Math.sin(yaw) * Math.cos(pitch);
-      const y = center.y + distance * Math.sin(pitch);
-      const z = center.z + distance * Math.cos(yaw) * Math.cos(pitch);
+      const x = center.x + distance * Math.sin(yaw) * Math.cos(pitch)
+      const y = center.y + distance * Math.sin(pitch)
+      const z = center.z + distance * Math.cos(yaw) * Math.cos(pitch)
 
-      camera.position.set(x, y, z);
-      camera.lookAt(center);
-      camera.updateProjectionMatrix();
+      camera.position.set(x, y, z)
+      camera.lookAt(center)
+      camera.updateProjectionMatrix()
     }
   </script>
 </body>

@@ -67,9 +67,9 @@ export function getPage() {
 export async function closeBrowser() {
   if (browser) {
     try {
-      await browser.close();
+      await browser.close()
     } catch (e) {
-      console.warn('[browser] error during close:', e.message);
+      console.warn('[browser] error during close:', e.message)
     }
   }
 }

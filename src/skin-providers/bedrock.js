@@ -19,7 +19,7 @@ export async function bedrockSkinFetchHandler(username) {
     const skinDataResponseJSON = await skinDataResponse.json()
     const tex_id = skinDataResponseJSON.texture_id
     const is_slim = !skinDataResponseJSON.is_steve
-    await updateSlimUsernameStatus(username, is_slim);
+    await updateSlimUsernameStatus(username, is_slim)
 
     const skinResponse = await fetch(`https://textures.minecraft.net/texture/${tex_id}`)
     if (!skinResponse.ok) throw new Error("Failed to fetch skin")
@@ -33,4 +33,4 @@ const requestOptions = {
     method: "GET",
     headers: headers,
     redirect: "follow"
-};
+}

@@ -1,25 +1,25 @@
 import { useRef, useState } from 'react'
 import styles from './upload.module.css'
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Turnstile } from '@marsidev/react-turnstile'
 export default function Upload() {
-    const fileForm = useRef<HTMLInputElement>(null);
-    const submitBtn = useRef<HTMLButtonElement>(null);
-    var [fileAllowed, setfileAllowed] = useState<boolean>(false);
-    var [turnstile, setTurnstile] = useState<boolean>(false);
+    const fileForm = useRef<HTMLInputElement>(null)
+    const submitBtn = useRef<HTMLButtonElement>(null)
+    var [fileAllowed, setfileAllowed] = useState<boolean>(false)
+    var [turnstile, setTurnstile] = useState<boolean>(false)
     function fileChanged() {
-        const allowedTypes = ['image/png'];
+        const allowedTypes = ['image/png']
         if (fileForm.current && submitBtn.current) {
             if (fileForm.current.files && fileForm.current.files[0]) {
-                const maxSize = 64 * 1024;
-                const fileSize = fileForm.current.files[0].size;
+                const maxSize = 64 * 1024
+                const fileSize = fileForm.current.files[0].size
                 if (fileSize > maxSize) {
-                    alert('This file is too large! Please select a 64x64 <10KB PNG file.');
+                    alert('This file is too large! Please select a 64x64 <10KB PNG file.')
                     fileForm.current.value = ""
                     setfileAllowed(false)
                 } else if (!allowedTypes.includes(fileForm.current.files[0].type)) {
-                    console.log(fileForm.current.files[0].type);
-                    alert('Invalid file type! Only JPEG, PNG, and PDF files are allowed.');
-                    fileForm.current.value = ''; // Reset the file input
+                    console.log(fileForm.current.files[0].type)
+                    alert('Invalid file type! Only JPEG, PNG, and PDF files are allowed.')
+                    fileForm.current.value = '' // Reset the file input
                     setfileAllowed(false)
                 } else {
                     setfileAllowed(true)

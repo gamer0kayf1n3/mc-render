@@ -1,10 +1,10 @@
 import styles from "./input.module.css"
-import { useRef } from 'react';
+import { useRef } from 'react'
 
 export default function Input({ submitFn }: { submitFn: (value: string) => void }) {
 
-    const inputRef = useRef<HTMLInputElement>(null);
-    const dropdownRef = useRef<HTMLSelectElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null)
+    const dropdownRef = useRef<HTMLSelectElement>(null)
 
     function platformChanged() {
         if (inputRef.current && dropdownRef.current) {
