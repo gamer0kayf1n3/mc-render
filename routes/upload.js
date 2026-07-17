@@ -2,9 +2,28 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import sizeOf from "image-size";
-
 import crypto from "crypto";
 import { updateSlimUsernameStatus } from "../src/skin-providers/is-slim.js";
+
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
+
+async function verifyTurnstileToken(token, remoteIp) {
+  const formData = new URLSearchParams();
+  formData.append("secret", TURNSTILE_SECRET_KEY);
+  formData.append("response", token);
+  if (remoteIp) formData.append("remoteip", remoteIp);
+
+  const response = await fetch(
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const outcome = await response.json();
+  return outcome;
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -44,11 +63,18 @@ export function handleAvatarUpload(req, res, next) {
   });
 }
 
-export function processAvatar(req, res) {
+export async function processAvatar(req, res) {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded." });
   }
   const { name, slim } = req.body;
+  const turnstileToken = req.body["cf-turnstile-response"];
+
+  if (!turnstileToken) {
+    fs.unlinkSync(req.file.path);
+    return res.status(400).json({ error: "Missing captcha token." });
+  }
+
   if (!name || typeof name !== "string") {
     fs.unlinkSync(req.file.path);
     return res.status(400).json({ error: "Missing or invalid 'name' field." });
@@ -63,6 +89,7 @@ export function processAvatar(req, res) {
     fs.unlinkSync(req.file.path);
     return res.status(400).json({ error: "Name contains invalid characters." });
   }
+
   const safeUsername = name.replace(/[^a-zA-Z0-9_\-]/g, "");
   const finalPath = path.join("uploads", `${safeUsername}.png`);
 
@@ -76,8 +103,18 @@ export function processAvatar(req, res) {
         error: `Dimensions (${dimensions.width}x${dimensions.height}) exceed 64x64 pixels.`,
       });
     }
+
+    const outcome = await verifyTurnstileToken(turnstileToken, req.ip);
+    if (!outcome.success) {
+      fs.unlinkSync(req.file.path);
+      return res.status(403).json({
+        error: "Captcha verification failed.",
+        details: outcome["error-codes"],
+      });
+    }
+
     fs.renameSync(req.file.path, finalPath);
-    updateSlimUsernameStatus(safeUsername, slim == "on")
+    updateSlimUsernameStatus(safeUsername, slim == "on");
     res.status(200).json({
       message: "Skin uploaded successfully!",
       access_key: safeUsername,

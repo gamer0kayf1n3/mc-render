@@ -1,8 +1,11 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import styles from './upload.module.css'
+import { Turnstile } from '@marsidev/react-turnstile';
 export default function Upload() {
     const fileForm = useRef<HTMLInputElement>(null);
     const submitBtn = useRef<HTMLButtonElement>(null);
+    var [fileAllowed, setfileAllowed] = useState<boolean>(false);
+    var [turnstile, setTurnstile] = useState<boolean>(false);
     function fileChanged() {
         const allowedTypes = ['image/png'];
         if (fileForm.current && submitBtn.current) {
@@ -12,16 +15,15 @@ export default function Upload() {
                 if (fileSize > maxSize) {
                     alert('This file is too large! Please select a 64x64 <10KB PNG file.');
                     fileForm.current.value = ""
-                    submitBtn.current.disabled = true
+                    setfileAllowed(false)
                 } else if (!allowedTypes.includes(fileForm.current.files[0].type)) {
                     console.log(fileForm.current.files[0].type);
                     alert('Invalid file type! Only JPEG, PNG, and PDF files are allowed.');
                     fileForm.current.value = ''; // Reset the file input
-                    submitBtn.current.disabled = true
+                    setfileAllowed(false)
                 } else {
-                    submitBtn.current.disabled = false
+                    setfileAllowed(true)
                 }
-
             }
         }
     }
@@ -34,7 +36,20 @@ export default function Upload() {
 Not setting this correctly will result to a broken render.">Slim Skin?</label>
                 <input type="checkbox" name="slim" className={styles.checkbox} />
             </div>
-            <button type="submit" disabled ref={submitBtn} className={styles.btn}>Upload File</button>
+            <Turnstile
+                siteKey="0x4AAAAAAD3gm_qPRaFInXb8"
+                onSuccess={() => {
+                    setTurnstile(true)
+                }}
+                onExpire={() => {
+                    setTurnstile(false)
+                }}
+                onError={() => {
+                    setTurnstile(false)
+
+                }}
+            />
+            <button type="submit" disabled={!(fileAllowed && turnstile)} ref={submitBtn} className={styles.btn}>Upload File</button>
         </form>
     </div>
 }
