@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.3",
+    "busboy": "^1.6.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "image-size": "^2.0.2",
