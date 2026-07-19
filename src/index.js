@@ -156,7 +156,7 @@ const staticLimiter = rateLimit({
 app.use(staticLimiter, express.static('public'))
 app.set('trust proxy', 1)
 
-app.get(staticLimiter, "/upload", (req, res) => {
+app.get("/upload", staticLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"))
 })
 
