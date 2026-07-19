@@ -5,6 +5,8 @@ import sizeOf from "image-size"
 import crypto, { verify } from "crypto"
 import { updateSlimUsernameStatus } from "../src/skin-providers/is-slim.js"
 import busboy from 'busboy'
+import rateLimit from 'express-rate-limit'
+
 
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY
 
@@ -190,3 +192,20 @@ export async function handleAvatarUpload(req, res) {
   })
   req.pipe(bb)
 }
+
+export const uploadPerIpLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 2,
+  message: { error: 'Too many uploads, slow down!' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+export const uploadGlobalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: () => 'global', // same key for everyone
+  message: { error: 'Server upload limit reached, try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})

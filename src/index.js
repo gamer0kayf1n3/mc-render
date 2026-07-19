@@ -11,7 +11,7 @@ import { getRenderCache, getTextureCache, refreshCache, setRenderCache, setTextu
 import { initRenderer } from './browser.js'
 import { renderBrowser } from './render.js'
 import { enqueue } from './queue.js'
-import { handleAvatarUpload } from "../routes/upload-v2.js"
+import { handleAvatarUpload, uploadGlobalLimiter, uploadPerIpLimiter } from "../routes/upload-v2.js"
 import { closeBrowser } from './browser.js'
 import { javaSkinFetchHandler } from './skin-providers/java.js'
 import { bedrockSkinFetchHandler } from './skin-providers/bedrock.js'
@@ -118,8 +118,11 @@ app.listen(10001, async () => {
   console.log('Skin renderer ready on :10001')
 })
 
-app.post("/upload", handleAvatarUpload)
+app.post('/upload', uploadPerIpLimiter, uploadGlobalLimiter, handleAvatarUpload)
+
 app.use(express.static('public'))
+
+
 app.get("/upload", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"))
 })
