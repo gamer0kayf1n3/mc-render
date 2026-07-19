@@ -19,11 +19,37 @@ import { uploadSkinFetchHandler } from './skin-providers/upload.js'
 import { cropHead } from './head.js'
 
 import sizeOf from 'image-size'
+import { slowDown } from 'express-slow-down'
+import rateLimit from 'express-rate-limit'
 
 const app = express()
 app.use(express.json({ limit: '5mb' }))
 
-app.get('/head', async (req, res) => {
+const renderSlowDown = slowDown({
+  windowMs: 60 * 1000,
+  delayAfter: 20,
+  delayMs: (hits) => Math.min((hits - 20) * 100, 2000)
+})
+
+const renderRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { error: 'Too many requests, slow down!' }
+})
+
+const headSlowDown = slowDown({
+  windowMs: 60 * 1000,
+  delayAfter: 40,
+  delayMs: (hits) => Math.min((hits - 40) * 100, 2000)
+})
+
+const headRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { error: 'Too many requests, slow down!' }
+})
+
+app.get('/head', headSlowDown, headRateLimit, async (req, res) => {
 
   const { username, refresh } = req.query
 
@@ -44,7 +70,7 @@ app.get('/head', async (req, res) => {
 
     var skinBuffer = await getTextureCache(username)
     var is_slim = await getSlimCache(username)
-    
+
     console.log("Head request made by", username)
     if (!skinBuffer) {
       if (username.startsWith(".")) ({ skin: skinBuffer, is_slim } = await bedrockSkinFetchHandler(username))
@@ -67,7 +93,7 @@ app.get('/head', async (req, res) => {
   }
 })
 
-app.get('/render', async (req, res) => {
+app.get('/render', renderSlowDown, renderRateLimit, async (req, res) => {
 
   const { username, refresh } = req.query
 
@@ -120,10 +146,17 @@ app.listen(10001, async () => {
 
 app.post('/upload', uploadPerIpLimiter, uploadGlobalLimiter, handleAvatarUpload)
 
-app.use(express.static('public'))
+const staticLimiter = rateLimit({
+  windowMs: 1000, // 1 second
+  max: 60,
+  message: { error: 'Too many requests.' }
+})
 
 
-app.get("/upload", (req, res) => {
+app.use(staticLimiter, express.static('public'))
+app.set('trust proxy', 1)
+
+app.get(staticLimiter, "/upload", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"))
 })
 
