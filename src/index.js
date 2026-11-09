@@ -17,6 +17,7 @@ import { javaSkinFetchHandler } from './skin-providers/java.js'
 import { bedrockSkinFetchHandler } from './skin-providers/bedrock.js'
 import { uploadSkinFetchHandler } from './skin-providers/upload.js'
 import { cropHead } from './head.js'
+import { cropHeadSplit } from './head-crop.js'
 
 import sizeOf from 'image-size'
 import { slowDown } from 'express-slow-down'
@@ -88,6 +89,40 @@ app.get('/head', headSlowDown, headRateLimit, async (req, res) => {
       'X-Cache': 'MISS',
       'Cache-Control': 'public, max-age=3600'
     }).send(freshHead)
+  } catch (err) {
+    res.status(500).json({ error: err.stack })
+  }
+})
+
+
+app.get('/headCrop', headSlowDown, headRateLimit, async (req, res) => {
+
+  const { username, refresh, scale } = req.query
+
+  try {
+
+    if (refresh == 'true') {
+      await refreshCache(username)
+    }
+
+    var skinBuffer = await getTextureCache(username)
+    var is_slim
+
+    console.log("HeadCrop request made by", username)
+    if (!skinBuffer) {
+      if (username.startsWith(".")) ({ skin: skinBuffer, is_slim } = await bedrockSkinFetchHandler(username))
+      else if (username.startsWith("+")) ({ skin: skinBuffer, is_slim } = await uploadSkinFetchHandler(username))
+      else ({ skin: skinBuffer, is_slim } = await javaSkinFetchHandler(username))
+
+      await setTextureCache(username, skinBuffer)
+
+    }
+
+    var split = await enqueue(() => cropHeadSplit(skinBuffer, { scale }))
+    return res.set({
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=3600'
+    }).send(split)
   } catch (err) {
     res.status(500).json({ error: err.stack })
   }
