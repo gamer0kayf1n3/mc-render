@@ -1,10 +1,20 @@
 import sharp from 'sharp'
 
-const HEAD = { left: 8, top: 8, width: 8, height: 8 }
-const HAT = { left: 40, top: 8, width: 8, height: 8 }
+const FACES = {
+    front: {
+        base: { left: 8, top: 8, width: 8, height: 8 },
+        hat: { left: 40, top: 8, width: 8, height: 8 },
+    },
+    back: {
+        base: { left: 24, top: 8, width: 8, height: 8 },
+        hat: { left: 56, top: 8, width: 8, height: 8 },
+    },
+}
 
 const clampInt = (value, fallback, min, max) =>
     Math.min(Math.max(parseInt(value) || fallback, min), max)
+
+const getFace = (side) => FACES[side] ?? FACES.front
 
 const nearest = (buf, size) =>
     sharp(buf)
@@ -12,11 +22,12 @@ const nearest = (buf, size) =>
         .png()
         .toBuffer()
 
-export async function cropHead(skinBuffer, { layer = 'both', scale = 8 } = {}) {
+export async function cropHead(skinBuffer, { side = 'front', layer = 'both', scale = 8 } = {}) {
     const size = clampInt(scale, 8, 1, 64) * 8
+    const face = getFace(side)
 
-    const base = await sharp(skinBuffer).extract(HEAD).toBuffer()
-    const hat = await sharp(skinBuffer).extract(HAT).toBuffer()
+    const base = await sharp(skinBuffer).extract(face.base).toBuffer()
+    const hat = await sharp(skinBuffer).extract(face.hat).toBuffer()
 
     let out
     if (layer === 'base') out = base
@@ -26,11 +37,13 @@ export async function cropHead(skinBuffer, { layer = 'both', scale = 8 } = {}) {
     return nearest(out, size)
 }
 
-export async function cropHeadSplit(skinBuffer, { scale = 1 } = {}) {
-    const k = clampInt(scale, 1, 1, 16)
 
-    const base = await nearest(await sharp(skinBuffer).extract(HEAD).toBuffer(), 64 * k)
-    const hat = await nearest(await sharp(skinBuffer).extract(HAT).toBuffer(), 72 * k)
+export async function cropHeadSplit(skinBuffer, { side = 'front', scale = 1 } = {}) {
+    const k = clampInt(scale, 1, 1, 16)
+    const face = getFace(side)
+
+    const base = await nearest(await sharp(skinBuffer).extract(face.base).toBuffer(), 64 * k)
+    const hat = await nearest(await sharp(skinBuffer).extract(face.hat).toBuffer(), 72 * k)
 
     return sharp({
         create: {
