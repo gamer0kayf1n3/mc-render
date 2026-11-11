@@ -97,7 +97,7 @@ app.get('/head', headSlowDown, headRateLimit, async (req, res) => {
 
 app.get('/headCrop', headSlowDown, headRateLimit, async (req, res) => {
 
-  const { username, refresh, scale } = req.query
+    const { username, refresh, scale, side } = req.query
 
   try {
 
@@ -118,7 +118,7 @@ app.get('/headCrop', headSlowDown, headRateLimit, async (req, res) => {
 
     }
 
-    var split = await enqueue(() => cropHeadSplit(skinBuffer, { scale }))
+    var split = await enqueue(() => cropHeadSplit(skinBuffer, { scale, side }))
     return res.set({
       'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=3600'
